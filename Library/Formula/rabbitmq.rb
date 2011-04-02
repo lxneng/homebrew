@@ -1,9 +1,9 @@
 require 'formula'
 
-class Rabbitmq <Formula
+class Rabbitmq < Formula
   homepage 'http://rabbitmq.com'
-  url 'http://www.rabbitmq.com/releases/rabbitmq-server/v2.2.0/rabbitmq-server-2.2.0.tar.gz'
-  md5 '65d0644aa4bf24398d13553b6aa6465f'
+  url 'http://www.rabbitmq.com/releases/rabbitmq-server/v2.4.0/rabbitmq-server-2.4.0.tar.gz'
+  md5 '5df5df63ec24249b7806e44b64059da5'
 
   depends_on 'erlang'
   depends_on 'simplejson' => :python if MACOS_VERSION < 10.6
@@ -25,7 +25,7 @@ class Rabbitmq <Formula
     (var+'lib/rabbitmq').mkpath
     (var+'log/rabbitmq').mkpath
 
-    %w{rabbitmq-server rabbitmq-multi rabbitmqctl rabbitmq-env}.each do |script|
+    %w{rabbitmq-server rabbitmqctl rabbitmq-env}.each do |script|
       inreplace sbin+script do |s|
         s.gsub! '/etc/rabbitmq', "#{etc}/rabbitmq"
         s.gsub! '/var/lib/rabbitmq', "#{var}/lib/rabbitmq"
