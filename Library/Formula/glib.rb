@@ -9,12 +9,14 @@ end
 def build_tests?; ARGV.include? '--test'; end
 
 class Glib < Formula
-  homepage 'http://www.gtk.org'
-  url 'http://ftp.gnome.org/pub/gnome/sources/glib/2.28/glib-2.28.4.tar.bz2'
-  sha256 'ae627cf35c6a2b4bb9b0ea624046de5fa4c40d81c29e75718bc6c2088b6bd7a1'
+  homepage 'http://developer.gnome.org/glib/2.28/'
+  url 'ftp://ftp.gnome.org/pub/gnome/sources/glib/2.28/glib-2.28.6.tar.bz2'
+  sha256 '557fb7c39d21b9359fbac51fd6b0b883bc97a2561c0166eef993a4078312f578'
 
   depends_on 'pkg-config' => :build
   depends_on 'gettext'
+
+  fails_with_llvm "Undefined symbol errors while linking"
 
   def patches
     mp = "http://trac.macports.org/export/77283/trunk/dports/devel/glib2/files/"
@@ -35,8 +37,6 @@ class Glib < Formula
   end
 
   def install
-    fails_with_llvm "Undefined symbol errors while linking"
-
     # Snow Leopard libiconv doesn't have a 64bit version of the libiconv_open
     # function, which breaks things for us, so we build our own
     # http://www.mail-archive.com/gtk-list@gnome.org/msg28747.html

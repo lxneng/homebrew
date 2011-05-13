@@ -1,10 +1,10 @@
 require 'formula'
 
 class Zeromq < Formula
-  url 'http://download.zeromq.org/zeromq-2.1.4.tar.gz'
-  head 'git://github.com/zeromq/zeromq2.git'
+  url 'http://download.zeromq.org/zeromq-2.1.7.tar.gz'
+  head 'git://github.com/zeromq/libzmq.git'
   homepage 'http://www.zeromq.org/'
-  md5 'b9a8043792be3bfbf791e77bf3f259e8'
+  md5 '7d3120f8a8fb913a7e55c57c6eb024f3'
 
   fails_with_llvm "Compiling with LLVM gives a segfault while linking."
 
@@ -33,7 +33,7 @@ class Zeromq < Formula
   def install
     system "./autogen.sh" if ARGV.build_head?
 
-    if ARGV.include? '--universal'
+    if ARGV.build_universal?
       build_fat
     else
       system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}", "--with-pgm"
@@ -46,7 +46,7 @@ class Zeromq < Formula
   def caveats; <<-EOS.undent
     To install the zmq gem on 10.6 with the system Ruby on a 64-bit machine,
     you may need to do:
-      $ ARCHFLAGS="-arch x86_64" gem install zmq -- --with-zmq-dir=#{HOMEBREW_PREFIX}
+        ARCHFLAGS="-arch x86_64" gem install zmq -- --with-zmq-dir=#{HOMEBREW_PREFIX}
 
     If you want to later build the Java bindings from https://github.com/zeromq/jzmq,
     you will need to obtain the Java Developer Package from Apple ADC

@@ -15,7 +15,7 @@ class Boost < Formula
   fails_with_llvm "LLVM-GCC causes errors with dropped arguments to functions when linking with boost"
 
   def install
-    if ARGV.include? "--universal"
+    if ARGV.build_universal?
       archs = archs_for_command("python")
       unless archs.universal?
         opoo "A universal build was requested, but Python is not a universal build"
@@ -56,7 +56,7 @@ class Boost < Formula
             "threading=multi",
             "install"]
 
-    args << "address-model=32_64" << "pch=off" if ARGV.include? "--universal"
+    args << "address-model=32_64" << "architecture=x86" << "pch=off" if ARGV.include? "--universal"
 
     # we specify libdir too because the script is apparently broken
     system "./bootstrap.sh", "--prefix=#{prefix}", "--libdir=#{lib}"
