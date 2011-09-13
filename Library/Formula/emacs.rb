@@ -1,7 +1,7 @@
 require 'formula'
 
 class Emacs < Formula
-  url 'http://ftp.gnu.org/pub/gnu/emacs/emacs-23.3a.tar.bz2'
+  url 'http://ftpmirror.gnu.org/emacs/emacs-23.3a.tar.bz2'
   md5 'f2cf8dc6f28f8ae59bc695b4ddda339c'
   homepage 'http://www.gnu.org/software/emacs/'
 
@@ -94,7 +94,7 @@ class Emacs < Formula
           #{prefix}
 
         Command-line emacs can be used by setting up an alias:
-          alias emacs=#{prefix}/Emacs.app/Contents/MacOS/Emacs -nw
+          alias emacs="#{prefix}/Emacs.app/Contents/MacOS/Emacs -nw"
 
       EOS
     end
