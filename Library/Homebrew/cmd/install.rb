@@ -4,6 +4,8 @@ require 'blacklist'
 
 module Homebrew extend self
   def install
+    raise FormulaUnspecifiedError if ARGV.named.empty?
+
     ARGV.named.each do |name|
       msg = blacklisted? name
       raise "No available formula for #{name}\n#{msg}" if msg
@@ -86,7 +88,17 @@ module Homebrew extend self
       formulae.each do |f|
         # Check formula status and skip if necessary---a formula passed on the
         # command line may have been installed to satisfy a dependency.
-        next if f.installed? unless ARGV.flag? '--force'
+        next if f.installed? unless ARGV.force?
+
+        # Building head-only without --HEAD is an error
+        if not ARGV.build_head? and f.standard.nil?
+          raise "This is a head-only formula; install with `brew install --HEAD #{f.name}`"
+        end
+
+        # Building stable-only with --HEAD is an error
+        if ARGV.build_head? and f.unstable.nil?
+           raise "No head is defined for #{f.name}"
+        end
 
         begin
           fi = FormulaInstaller.new(f)
