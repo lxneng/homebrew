@@ -1,10 +1,11 @@
 require 'formula'
 
 class Redis < Formula
-  url 'http://redis.googlecode.com/files/redis-2.4.6.tar.gz'
-  head 'https://github.com/antirez/redis.git', :branch => 'unstable'
   homepage 'http://redis.io/'
-  md5 '41d394074bcde762872ecb5506f35aee'
+  url 'http://redis.googlecode.com/files/redis-2.4.9.tar.gz'
+  md5 'b3752496427b0a7e5ceea401f279aa24'
+
+  head 'https://github.com/antirez/redis.git', :branch => 'unstable'
 
   fails_with_llvm 'Fails with "reference out of range from _linenoise"', :build => 2334
 
@@ -26,6 +27,7 @@ class Redis < Formula
     inreplace "redis.conf" do |s|
       s.gsub! "/var/run/redis.pid", "#{var}/run/redis.pid"
       s.gsub! "dir ./", "dir #{var}/db/redis/"
+      s.gsub! "\# bind 127.0.0.1", "bind 127.0.0.1"
     end
 
     doc.install Dir["doc/*"]
