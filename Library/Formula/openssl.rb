@@ -2,8 +2,8 @@ require 'formula'
 
 class Openssl < Formula
   homepage 'http://openssl.org'
-  url 'http://openssl.org/source/openssl-1.0.1a.tar.gz'
-  sha256 'd3487e09d891c772cf946273a3bb0ca47479e7941be6d822274320e7cfcc361b'
+  url 'http://openssl.org/source/openssl-1.0.1c.tar.gz'
+  sha256 '2a9eb3cd4e8b114eb9179c0d3884d61658e7d8e8bf4984798a5f5bd48e325ebe'
 
   keg_only :provided_by_osx,
     "The OpenSSL provided by OS X is too old for some software."
@@ -12,7 +12,6 @@ class Openssl < Formula
     args = %W[./Configure
                --prefix=#{prefix}
                --openssldir=#{etc}/openssl
-               no-asm
                zlib-dynamic
                shared
              ]

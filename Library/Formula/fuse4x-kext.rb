@@ -5,10 +5,17 @@ def kext_prefix
 end
 
 class Fuse4xKext < Formula
-  homepage 'http://fuse4x.org/'
-  url 'https://github.com/fuse4x/kext/tarball/fuse4x_0_10_0'
-  md5 'f7b3946926e97e9d5cfb1db916152b61'
-  version "0.10.0"
+  homepage 'http://fuse4x.github.com'
+  url 'https://github.com/fuse4x/kext/tarball/fuse4x_0_9_1'
+  md5 'd9139a55157427a3f9985a8e1f79e23b'
+  version "0.9.1"
+
+  bottle do
+    # Bottle provided for Lion since the Command Line Tools cannot compile
+    # things that use `xcodebuild`. Actual compilation takes ~10 seconds so
+    # there is no need to bottle this for earlier systems.
+    sha1 '2bc7b00c52823ea7efd8e09fb340f1701801baca' => :lion
+  end
 
   def install
     ENV.delete('CC')
