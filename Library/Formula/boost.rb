@@ -1,7 +1,7 @@
 require 'formula'
 
 def needs_universal_python?
-  ARGV.build_universal? and not ARGV.include? "--without-python"
+  build.universal? and not build.include? "without-python"
 end
 
 class UniversalPython < Requirement
@@ -19,14 +19,15 @@ end
 
 class Boost < Formula
   homepage 'http://www.boost.org'
-  url 'http://downloads.sourceforge.net/project/boost/boost/1.49.0/boost_1_49_0.tar.bz2'
-  sha1 '26a52840e9d12f829e3008589abf0a925ce88524'
+  url 'http://downloads.sourceforge.net/project/boost/boost/1.51.0/boost_1_51_0.tar.bz2'
+  sha1 '52ef06895b97cc9981b8abf1997c375ca79f30c5'
 
   head 'http://svn.boost.org/svn/boost/trunk'
 
   bottle do
-    sha1 '6b706780670a8bec5b3e0355f5dfeeaa37d9a41e' => :lion
-    sha1 '46945515d520009fbbc101e4ae19f28db1433752' => :snowleopard
+    sha1 'd1f4cb36278adb7d86b221bcfc63619ec3022fdb' => :mountainlion
+    sha1 '46dd00df6343295bceae54b040cceb1d3714fe15' => :lion
+    sha1 '474aed3845ceaf26e0eeb3175ad3e2c4f3bca942' => :snowleopard
   end
 
   option :universal
