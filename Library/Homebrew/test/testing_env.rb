@@ -20,10 +20,15 @@ HOMEBREW_REPOSITORY=HOMEBREW_PREFIX
 HOMEBREW_CACHE=HOMEBREW_PREFIX.parent+"cache"
 HOMEBREW_CACHE_FORMULA=HOMEBREW_PREFIX.parent+"formula_cache"
 HOMEBREW_CELLAR=HOMEBREW_PREFIX.parent+"cellar"
+HOMEBREW_LOGS = HOMEBREW_PREFIX.parent+"logs"
 HOMEBREW_USER_AGENT="Homebrew"
 HOMEBREW_WWW='http://example.com'
 HOMEBREW_CURL_ARGS = '-fsLA'
-MACOS_VERSION=10.6
+HOMEBREW_VERSION = '0.9-test'
+
+MACOS = true
+MACOS_VERSION = 10.6
+MACOS_FULL_VERSION = '10.6.8'
 
 (HOMEBREW_PREFIX+'Library/Formula').mkpath
 
@@ -82,4 +87,11 @@ module VersionAssertions
   def assert_version_nil url
     assert_nil Version.parse(url)
   end
+end
+
+module Test::Unit::Assertions
+  def assert_empty(obj, msg=nil)
+    assert_respond_to(obj, :empty?, msg)
+    assert(obj.empty?, msg)
+  end if RUBY_VERSION.to_f <= 1.8
 end

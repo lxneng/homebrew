@@ -7,10 +7,12 @@ class Gnuplot < Formula
 
   head 'cvs://:pserver:anonymous@gnuplot.cvs.sourceforge.net:/cvsroot/gnuplot:gnuplot', :using => :cvs
 
-  option 'pdf', 'Build with pdflib-lite support.'
-  option 'wx', 'Build with wxWidgets support.'
-  option 'nolua', 'Build without lua support.'
-  option 'nogd', 'Build without gd support.'
+  option 'pdf', 'Build with pdflib-lite support'
+  option 'wx', 'Build with wxWidgets support'
+  option 'nolua', 'Build without lua support'
+  option 'nogd', 'Build without gd support'
+  option 'with-x', 'Build with X support'
+  option 'without-emacs', 'Do not build Emacs lisp files'
 
   if build.head?
     depends_on :automake
@@ -19,8 +21,8 @@ class Gnuplot < Formula
 
   depends_on 'pkg-config' => :build
   depends_on 'readline'
-  depends_on 'pango'
-  depends_on :x11
+  depends_on 'pango' unless build.include? 'with-x' or MacOS::X11.installed?
+  depends_on :x11 if build.include? 'with-x' or MacOS::X11.installed?
   depends_on 'pdflib-lite' if build.include? 'pdf'
   depends_on 'lua' unless build.include? 'nolua'
   depends_on 'gd' unless build.include? 'nogd'
@@ -40,7 +42,7 @@ class Gnuplot < Formula
     gd = Formula.factory 'gd'
 
     # Aquaterm disabled due to breakage. See:
-    #   https://github.com/mxcl/homebrew/issues/14647
+    # https://github.com/mxcl/homebrew/issues/14647
     args = %W[
       --disable-debug
       --disable-dependency-tracking
@@ -49,9 +51,10 @@ class Gnuplot < Formula
       --without-aquaterm
     ]
 
-    args << '--disable-wxwidgets' unless build.include? 'wx'
+    args << "--disable-wxwidgets" unless build.include? 'wx'
     args << "--with-pdf=#{pdflib.prefix}" if build.include? 'pdf'
-    args << '--without-lua' if build.include? 'nolua'
+    args << "--without-lua" if build.include? 'nolua'
+    args << "--without-lisp-files" if build.include? 'without-emacs'
 
     if build.include? 'nogd'
       args << '--without-gd'
