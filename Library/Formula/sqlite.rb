@@ -7,16 +7,16 @@ class SqliteFunctions < Formula
 end
 
 class SqliteDocs < Formula
-  url 'http://www.sqlite.org/sqlite-doc-3071400.zip'
-  sha1 '38a8e9a4fa515f7aa6df7d31e58bd0ec60658031'
-  version '3.7.14.1'
+  url 'http://www.sqlite.org/sqlite-doc-3071502.zip'
+  version '3.7.15.2'
+  sha1 '06076f7a5b3f5b4dad3803f96375bf3755cd0913'
 end
 
 class Sqlite < Formula
   homepage 'http://sqlite.org/'
-  url 'http://sqlite.org/sqlite-autoconf-3071401.tar.gz'
-  sha1 'c464e0e3efe98227c6546b9b1e786b51b8b642fc'
-  version '3.7.14.1'
+  url 'http://sqlite.org/sqlite-autoconf-3071502.tar.gz'
+  version '3.7.15.2'
+  sha1 '075732562183d560cd46a0d8d08b50bc44e34eac'
 
   depends_on 'readline' => :recommended
 
@@ -25,6 +25,8 @@ class Sqlite < Formula
   option 'without-rtree', 'Disable the R*Tree index module'
   option 'with-fts', 'Enable the FTS module'
   option 'with-functions', 'Enable more math and string functions for SQL queries'
+
+  keg_only :provided_by_osx, "OS X already provides (an older) sqlite3."
 
   def install
     ENV.append 'CPPFLAGS', "-DSQLITE_ENABLE_RTREE" unless build.include? "without-rtree"

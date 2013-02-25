@@ -14,17 +14,15 @@ class Gfortran < Formula
     sha1 '9708ac5fa35db9789b8e050fbe410acee9ec9e45' => :snowleopard
   end
 
+  option 'enable-profiled-build', 'Make use of profile guided optimization when bootstrapping GCC'
+  option 'check', 'Run the make check fortran. This is for maintainers.'
+
   depends_on 'gmp'
   depends_on 'libmpc'
   depends_on 'mpfr'
 
-  option 'enable-profiled-build', 'Make use of profile guided optimization when bootstrapping GCC'
-  option 'check', 'Run the make check fortran. This is for maintainers.'
-
-  begin
-    depends_on 'dejagnu'
-    depends_on 'expect'
-  end if build.include? 'check'  # http://gcc.gnu.org/install/test.html
+  # http://gcc.gnu.org/install/test.html
+  depends_on 'dejagnu' if build.include? 'check'
 
   fails_with :clang do
     build 421
@@ -96,24 +94,22 @@ class Gfortran < Formula
     # (share/'locale').rmtree
   end
 
-  def test
-    mktemp do
-      fixture = <<-EOS.undent
-        integer,parameter::m=10000
-        real::a(m), b(m)
-        real::fact=0.5
+  test do
+    fixture = <<-EOS.undent
+      integer,parameter::m=10000
+      real::a(m), b(m)
+      real::fact=0.5
 
-        do concurrent (i=1:m)
-          a(i) = a(i) + fact*b(i)
-        end do
-        print *, "done"
-        end
-      EOS
-      Pathname('in.f90').write(fixture)
-      system "#{bin}/gfortran -c in.f90"
-      system "#{bin}/gfortran -o test in.o"
-      `./test`.strip =='done'
-    end
+      do concurrent (i=1:m)
+        a(i) = a(i) + fact*b(i)
+      end do
+      print *, "done"
+      end
+    EOS
+    Pathname('in.f90').write(fixture)
+    system "#{bin}/gfortran -c in.f90"
+    system "#{bin}/gfortran -o test in.o"
+    `./test`.strip =='done'
   end
 
   def caveats; <<-EOS.undent

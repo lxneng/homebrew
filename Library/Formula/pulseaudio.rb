@@ -13,12 +13,11 @@ class Pulseaudio < Formula
   if build.head?
     depends_on :autoconf
     depends_on :automake
-    depends_on :libtool 
+    depends_on :libtool
   end
 
   depends_on 'pkg-config' => :build
-
-  depends_on 'intltool'
+  depends_on 'intltool' => :build
   depends_on 'libsndfile'
   depends_on 'speex'
   depends_on 'gdbm'
@@ -32,7 +31,7 @@ class Pulseaudio < Formula
             "--disable-hal",
             "--disable-bluez",
             "--disable-avahi",
-            "--with-udev-rules-dir=#{prefix}/lib/udev/rules.d",
+            "--with-udev-rules-dir=#{lib}/udev/rules.d",
             "--with-mac-sysroot=#{MacOS.sdk_path}",
             "--with-mac-version-min=#{MacOS.version}"]
 
