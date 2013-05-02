@@ -2,8 +2,9 @@ require 'formula'
 
 class Elasticsearch < Formula
   homepage 'http://www.elasticsearch.org'
-  url 'http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.20.4.tar.gz'
-  sha1 '1d5e58649ec84fba9ed41ed75b38b6758ad411e9'
+  url 'https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.0.tar.gz'
+  sha1 '92b8c07b51cedda7c8148eceb23bbcb79bccf230'
+
   head 'https://github.com/elasticsearch/elasticsearch.git'
 
   depends_on 'maven' if build.head?
@@ -98,8 +99,6 @@ class Elasticsearch < Formula
           </dict>
           <key>RunAtLoad</key>
           <true/>
-          <key>UserName</key>
-          <string>#{ENV['USER']}</string>
           <key>WorkingDirectory</key>
           <string>#{var}</string>
           <key>StandardErrorPath</key>
