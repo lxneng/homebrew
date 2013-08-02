@@ -4,7 +4,14 @@ class Mysql < Formula
   homepage 'http://dev.mysql.com/doc/refman/5.6/en/'
   url 'http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-5.6.12.tar.gz/from/http://cdn.mysql.com/'
   version '5.6.12'
-  sha1 '852e168fd39bb24adf8805642be20a59042c2e6c'
+  sha1 'c48ae4061c23db89de7ebd2d25abbc36283bab69'
+
+  bottle do
+    revision 1
+    sha1 '9d12112f31fad2af789363b2006c8e3f53518211' => :mountain_lion
+    sha1 'e986049a132e7a54b86c7b4fa2551c2dbc1667d7' => :lion
+    sha1 '47e7ee873ca5bfd8f84a3f53c8744517affc89d7' => :snow_leopard
+  end
 
   depends_on 'cmake' => :build
   depends_on 'pidof' unless MacOS.version >= :mountain_lion
@@ -92,6 +99,9 @@ class Mysql < Formula
 
     system "cmake", *args
     system "make"
+    # Reported upstream:
+    # http://bugs.mysql.com/bug.php?id=69645
+    inreplace "scripts/mysql_config", / +-Wno[\w-]+/, ""
     system "make install"
 
     # Don't create databases inside of the prefix!

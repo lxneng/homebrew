@@ -1,7 +1,3 @@
-# This software is in the public domain, furnished "as is", without technical
-# support, and with no warranty, express or implied, as to its usefulness for
-# any purpose.
-
 # Require this file to build a testing environment.
 
 ABS__FILE__ = File.expand_path(__FILE__)
@@ -30,7 +26,7 @@ HOMEBREW_WWW           = 'http://example.com'
 HOMEBREW_CURL_ARGS     = '-fsLA'
 HOMEBREW_VERSION       = '0.9-test'
 
-RUBY_BIN = Pathname.new("#{RbConfig::CONFIG['bindir']}")
+RUBY_BIN = Pathname.new(RbConfig::CONFIG['bindir'])
 RUBY_PATH = RUBY_BIN + RbConfig::CONFIG['ruby_install_name'] + RbConfig::CONFIG['EXEEXT']
 
 MACOS = true

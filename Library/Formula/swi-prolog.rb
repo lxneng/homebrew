@@ -6,8 +6,8 @@ class SwiProlog < Formula
   sha256 '9412f0753a61c30dbcf1afac01fe7c9168002854709e00e09c21f959e1232146'
 
   devel do
-    url 'http://www.swi-prolog.org/download/devel/src/pl-6.3.17.tar.gz'
-    sha1 '93bf9a0f824a3d1ce8a189a37d0c186de6479d42'
+    url 'http://www.swi-prolog.org/download/devel/src/pl-6.3.19.tar.gz'
+    sha1 'b81e2866b48342007541d4574f46aeb57fac78ab'
   end
 
   head 'git://www.swi-prolog.org/home/pl/git/pl.git'
@@ -26,7 +26,7 @@ class SwiProlog < Formula
   end
 
   # 10.5 versions of these are too old
-  if MacOS.version == :leopard
+  if MacOS.version <= :leopard
     depends_on 'fontconfig'
     depends_on 'expat'
   end
@@ -44,8 +44,8 @@ class SwiProlog < Formula
     # SWI-Prolog's Makefiles don't add CPPFLAGS to the compile command, but do
     # include CIFLAGS. Setting it here. Also, they clobber CFLAGS, so including
     # the Homebrew-generated CFLAGS into COFLAGS here.
-    ENV['CIFLAGS'] = ENV['CPPFLAGS']
-    ENV['COFLAGS'] = ENV['CFLAGS']
+    ENV['CIFLAGS'] = ENV.cppflags
+    ENV['COFLAGS'] = ENV.cflags
 
     # Build the packages unless --lite option specified
     args << "--with-world" unless build.include? "lite"
