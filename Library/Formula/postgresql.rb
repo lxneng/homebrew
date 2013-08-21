@@ -60,14 +60,14 @@ class Postgresql < Formula
       ENV.append 'LIBS', `uuid-config --libs`.strip
     end
 
-    if not build.build_32_bit? and MacOS.prefer_64_bit? and build.with? 'python'
-      args << "ARCHFLAGS='-arch x86_64'"
+    if build.with? 'python'
+      args << "ARCHFLAGS='-arch #{MacOS.preferred_arch}'"
       check_python_arch
     end
 
     if build.build_32_bit?
-      ENV.append 'CFLAGS', '-arch i386'
-      ENV.append 'LDFLAGS', '-arch i386'
+      ENV.append 'CFLAGS', "-arch #{MacOS.preferred_arch}"
+      ENV.append 'LDFLAGS', "-arch #{MacOS.preferred_arch}"
     end
 
     system "./configure", *args
@@ -75,25 +75,23 @@ class Postgresql < Formula
   end
 
   def check_python_arch
-    # On 64-bit systems, we need to avoid a 32-bit Framework Python.
-    if python.framework?
-      unless archs_for_command(python.binary).include? :x86_64
-        opoo "Detected a framework Python that does not have 64-bit support in:"
-        puts <<-EOS.undent
-          #{python.prefix}
+    # On 64-bit systems, we need to look for a 32-bit Framework Python.
+    # The configure script prefers this Python version, and if it doesn't
+    # have 64-bit support then linking will fail.
+    framework_python = Pathname.new("/Library/Frameworks/Python.framework/Versions/Current/Python")
+    return unless framework_python.exist?
+    unless (archs_for_command(framework_python)).include? :x86_64
+      opoo "Detected a framework Python that does not have 64-bit support in:"
+      puts <<-EOS.undent
+          #{framework_python}
 
-          The configure script seems to prefer this version of Python over any others,
-          so you may experience linker problems as described in:
-            http://osdir.com/ml/pgsql-general/2009-09/msg00160.html
+        The configure script seems to prefer this version of Python over any others,
+        so you may experience linker problems as described in:
+          http://osdir.com/ml/pgsql-general/2009-09/msg00160.html
 
-          To fix this issue, you may need to either delete the version of Python
-          shown above, or move it out of the way before brewing PostgreSQL.
-
-          Note that a framework Python in /Library/Frameworks/Python.framework is
-          the "MacPython" version, and not the system-provided version which is in:
-            /System/Library/Frameworks/Python.framework
-        EOS
-      end
+        To fix this issue, you may need to either delete the version of Python
+        shown above, or move it out of the way before brewing PostgreSQL.
+      EOS
     end
   end
 
@@ -103,14 +101,11 @@ class Postgresql < Formula
     you may need to remove the previous version first. See:
       https://github.com/mxcl/homebrew/issues/issue/2510
 
-
     If this is your first install, create a database with:
       initdb #{var}/postgres -E utf8
 
-
     To migrate existing data from a previous major version (pre-9.2) of PostgreSQL, see:
       http://www.postgresql.org/docs/9.2/static/upgrading.html
-
 
     Some machines may require provisioning of shared memory:
       http://www.postgresql.org/docs/9.2/static/kernel-resources.html#SYSVIPC
