@@ -7,6 +7,12 @@ class Redis < Formula
 
   head 'https://github.com/antirez/redis.git', :branch => 'unstable'
 
+  bottle do
+    sha1 '961733ae14c8822c3918a85475141a0514e996c1' => :mavericks
+    sha1 '56d2245a72b6f56af66e979175a441cddc3a3bae' => :mountain_lion
+    sha1 '89dce53fca0c2116bf18ada9f5b2fb16a941d5ce' => :lion
+  end
+
   fails_with :llvm do
     build 2334
     cause 'Fails with "reference out of range from _linenoise"'
@@ -30,14 +36,8 @@ class Redis < Formula
       s.gsub! "\# bind 127.0.0.1", "bind 127.0.0.1"
     end
 
-    # Fix redis upgrade from 2.4 to 2.6.
-    if File.exists?(etc/'redis.conf') && !File.readlines(etc/'redis.conf').grep(/^vm-enabled/).empty?
-      mv etc/'redis.conf', etc/'redis.conf.old'
-      ohai "Your redis.conf will not work with 2.6; moved it to redis.conf.old"
-    end
-
-    etc.install 'redis.conf' unless (etc/'redis.conf').exist?
-    etc.install 'sentinel.conf' => 'redis-sentinel.conf' unless (etc/'redis-sentinel.conf').exist?
+    etc.install 'redis.conf'
+    etc.install 'sentinel.conf' => 'redis-sentinel.conf'
   end
 
   plist_options :manual => "redis-server #{HOMEBREW_PREFIX}/etc/redis.conf"
