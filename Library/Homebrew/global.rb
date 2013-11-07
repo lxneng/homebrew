@@ -64,7 +64,7 @@ else
   HOMEBREW_REPOSITORY+"Cellar"
 end
 
-HOMEBREW_LOGS = Pathname.new('~/Library/Logs/Homebrew/').expand_path
+HOMEBREW_LOGS = Pathname.new(ENV['HOMEBREW_LOGS'] || '~/Library/Logs/Homebrew/').expand_path
 
 RUBY_BIN = Pathname.new(RbConfig::CONFIG['bindir'])
 RUBY_PATH = RUBY_BIN + RbConfig::CONFIG['ruby_install_name'] + RbConfig::CONFIG['EXEEXT']
@@ -84,6 +84,9 @@ HOMEBREW_USER_AGENT = "Homebrew #{HOMEBREW_VERSION} (Ruby #{RUBY_VERSION}-#{RUBY
 HOMEBREW_CURL_ARGS = '-f#LA'
 
 HOMEBREW_TAP_FORMULA_REGEX = %r{^(\w+)/(\w+)/([^/]+)$}
+HOMEBREW_TAP_DIR_REGEX = %r{#{HOMEBREW_LIBRARY}/Taps/(\w+)-(\w+)}
+HOMEBREW_TAP_PATH_REGEX = Regexp.new(HOMEBREW_TAP_DIR_REGEX.source \
+                                     + %r{/(.*)}.source)
 
 module Homebrew extend self
   include FileUtils

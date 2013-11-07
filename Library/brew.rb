@@ -70,16 +70,12 @@ begin
              'abv' => 'info',
              'dr' => 'doctor',
              '--repo' => '--repository',
-             'environment' => '--env'  # same as gem
+             'environment' => '--env',
+             '-c1' => '--config',
              }
 
   cmd = ARGV.shift
   cmd = aliases[cmd] if aliases[cmd]
-
-  if cmd == '-c1' # Shortcut for one line of configuration
-    cmd = '--config'
-    ARGV.unshift('-1')
-  end
 
   sudo_check = Set.new %w[ install link pin unpin upgrade ]
 
@@ -90,7 +86,7 @@ begin
   end
 
   # Add contributed commands to PATH before checking.
-  ENV['PATH'] += ":#{HOMEBREW_REPOSITORY}/Library/Contributions/cmd"
+  ENV['PATH'] += ":#{HOMEBREW_CONTRIB}/cmd"
   if require? HOMEBREW_REPOSITORY/"Library/Homebrew/cmd"/cmd
     Homebrew.send cmd.to_s.gsub('-', '_').downcase
   elsif which "brew-#{cmd}"

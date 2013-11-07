@@ -25,6 +25,10 @@ class Formula
 
   attr_accessor :local_bottle_path
 
+  # Flag for marking whether this formula needs C++ standard library
+  # compatibility check
+  attr_reader :cxxstdlib
+
   # Homebrew determines the name
   def initialize name='__UNKNOWN__', path=nil
     @name = name
@@ -52,6 +56,8 @@ class Formula
     @build = determine_build_options
 
     @pin = FormulaPin.new(self)
+
+    @cxxstdlib ||= Set.new
   end
 
   def set_spec(name)
@@ -169,10 +175,7 @@ class Formula
   # generally we don't want var stuff inside the keg
   def var; HOMEBREW_PREFIX+'var' end
 
-  def bash_completion
-    etc = ENV['HOMEBREW_GIT_ETC'] ? self.etc : prefix+'etc'
-    etc+'bash_completion.d'
-  end
+  def bash_completion; prefix+'etc/bash_completion.d' end
   def zsh_completion;  share+'zsh/site-functions'     end
 
   # for storing etc, var files for later copying from bottles
@@ -193,6 +196,10 @@ class Formula
 
   def cached_download
     downloader.cached_location
+  end
+
+  def clear_cache
+    downloader.clear_cache
   end
 
   # Can be overridden to selectively disable bottles from formulae.
@@ -362,7 +369,7 @@ class Formula
 
   # an array of all Formula names
   def self.names
-    Dir["#{HOMEBREW_REPOSITORY}/Library/Formula/*.rb"].map{ |f| File.basename f, '.rb' }.sort
+    Dir["#{HOMEBREW_LIBRARY}/Formula/*.rb"].map{ |f| File.basename f, '.rb' }.sort
   end
 
   def self.each
@@ -393,7 +400,7 @@ class Formula
   end
 
   def self.aliases
-    Dir["#{HOMEBREW_REPOSITORY}/Library/Aliases/*"].map{ |f| File.basename f }.sort
+    Dir["#{HOMEBREW_LIBRARY}/Aliases/*"].map{ |f| File.basename f }.sort
   end
 
   # TODO - document what this returns and why
@@ -402,7 +409,7 @@ class Formula
     if name.include? "/"
       if name =~ %r{(.+)/(.+)/(.+)}
         tap_name = "#$1-#$2".downcase
-        tapd = Pathname.new("#{HOMEBREW_REPOSITORY}/Library/Taps/#{tap_name}")
+        tapd = Pathname.new("#{HOMEBREW_LIBRARY}/Taps/#{tap_name}")
         tapd.find_formula do |relative_pathname|
           return "#{tapd}/#{relative_pathname}" if relative_pathname.stem.to_s == $3
         end if tapd.directory?
@@ -412,13 +419,13 @@ class Formula
     end
 
     # test if the name is a core formula
-    formula_with_that_name = Pathname.new("#{HOMEBREW_REPOSITORY}/Library/Formula/#{name}.rb")
+    formula_with_that_name = Pathname.new("#{HOMEBREW_LIBRARY}/Formula/#{name}.rb")
     if formula_with_that_name.file? and formula_with_that_name.readable?
       return name
     end
 
     # test if the name is a formula alias
-    possible_alias = Pathname.new("#{HOMEBREW_REPOSITORY}/Library/Aliases/#{name}")
+    possible_alias = Pathname.new("#{HOMEBREW_LIBRARY}/Aliases/#{name}")
     if possible_alias.file?
       return possible_alias.realpath.basename('.rb').to_s
     end
@@ -437,8 +444,12 @@ class Formula
     Formulary.factory name
   end
 
+  def tap?
+    !!path.realpath.to_s.match(HOMEBREW_TAP_DIR_REGEX)
+  end
+
   def tap
-    if path.realpath.to_s =~ %r{#{HOMEBREW_REPOSITORY}/Library/Taps/(\w+)-(\w+)}
+    if path.realpath.to_s =~ HOMEBREW_TAP_DIR_REGEX
       "#$1/#$2"
     elsif core_formula?
       "mxcl/master"
@@ -453,7 +464,7 @@ class Formula
   end
 
   def self.path name
-    Pathname.new("#{HOMEBREW_REPOSITORY}/Library/Formula/#{name.downcase}.rb")
+    Pathname.new("#{HOMEBREW_LIBRARY}/Formula/#{name.downcase}.rb")
   end
 
   def env
@@ -566,44 +577,41 @@ class Formula
       ENV.remove_cc_etc
     end
 
-    if ARGV.verbose?
-      safe_system cmd, *args
-    else
-      @exec_count ||= 0
-      @exec_count += 1
-      logd = HOMEBREW_LOGS/name
-      logfn = "#{logd}/%02d.%s" % [@exec_count, File.basename(cmd.to_s).split(' ').first]
-      mkdir_p(logd)
+    @exec_count ||= 0
+    @exec_count += 1
+    logd = HOMEBREW_LOGS/name
+    logfn = "#{logd}/%02d.%s" % [@exec_count, File.basename(cmd.to_s).split(' ').first]
+    mkdir_p(logd)
 
-      rd, wr = IO.pipe
-      fork do
-        rd.close
-        $stdout.reopen wr
-        $stderr.reopen wr
-        args.collect!{|arg| arg.to_s}
-        exec(cmd.to_s, *args) rescue nil
-        puts "Failed to execute: #{cmd}"
-        exit! 1 # never gets here unless exec threw or failed
+    rd, wr = IO.pipe
+    fork do
+      rd.close
+      $stdout.reopen wr
+      $stderr.reopen wr
+      args.collect!{|arg| arg.to_s}
+      exec(cmd.to_s, *args) rescue nil
+      puts "Failed to execute: #{cmd}"
+      exit! 1 # never gets here unless exec threw or failed
+    end
+    wr.close
+
+    File.open(logfn, 'w') do |f|
+      while buf = rd.gets
+        f.puts buf
+        puts buf if ARGV.verbose?
       end
-      wr.close
 
-      File.open(logfn, 'w') do |f|
-        f.write(rd.read) until rd.eof?
+      Process.wait
 
-        Process.wait
-
-        unless $?.success?
-          f.flush
-          Kernel.system "/usr/bin/tail", "-n", "5", logfn
-          f.puts
-          require 'cmd/--config'
-          Homebrew.write_build_config(f)
-          raise ErrorDuringExecution
-        end
+      unless $?.success?
+        f.flush
+        Kernel.system "/usr/bin/tail", "-n", "5", logfn unless ARGV.verbose?
+        f.puts
+        require 'cmd/--config'
+        Homebrew.write_build_config(f)
+        raise BuildError.new(self, cmd, args, $?)
       end
     end
-  rescue ErrorDuringExecution
-    raise BuildError.new(self, cmd, args, $?)
   ensure
     rd.close if rd and not rd.closed?
     ENV.update(removed_ENV_variables) if removed_ENV_variables
@@ -637,6 +645,12 @@ class Formula
       # -f means don't prompt the user if there are errors; just exit with non-zero status
       safe_system '/usr/bin/patch', '-f', *(p.patch_args)
     end
+  end
+
+  # Explicitly request changing C++ standard library compatibility check
+  # settings. Use with caution!
+  def cxxstdlib_check check_type
+    @cxxstdlib << check_type
   end
 
   def self.method_added method
