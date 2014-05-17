@@ -127,7 +127,15 @@ class Cmd
     loop do
       case arg = enum.next
       when "-arch"
-        enum.next
+        if cccfg?("K")
+          args << arg << enum.next
+        else
+          enum.next
+        end
+      when "-m32"
+        args << arg if cccfg?("3") || cccfg?("K")
+      when "-m64"
+        args << arg if cccfg?("K")
       when /^-Xarch_/
         refurbished = refurbish_arg(enum.next, enum)
         unless refurbished.empty?
@@ -146,18 +154,16 @@ class Cmd
     args = []
 
     case arg
-    when '-m32'
-      # If ENV.m32 was set, we allow the "-m32" flag, but we don't add anything
-      args << '-m32' if cccfg? '3'
     when /^-g\d?/, /^-gstabs\d+/, '-gstabs+', /^-ggdb\d?/, '-gdwarf-2',
-      /^-march=.+/, /^-mtune=.+/, /^-mcpu=.+/, '-m64',
+      /^-march=.+/, /^-mtune=.+/, /^-mcpu=.+/,
       /^-O[0-9zs]?$/, '-fast', '-no-cpp-precomp',
       '-pedantic', '-pedantic-errors'
     when '-fopenmp', '-lgomp', '-mno-fused-madd', '-fforce-addr', '-fno-defer-pop',
       '-mno-dynamic-no-pic', '-fearly-inlining', '-finline-functions-called-once',
       /^-finline-limit/, /^-f(?:no-)?check-new/, '-fno-delete-null-pointer-checks',
       '-fcaller-saves', '-fthread-jumps', '-fno-reorder-blocks', '-fcse-skip-blocks',
-      '-frerun-cse-after-loop', '-frerun-loop-opt', '-fcse-follow-jumps'
+      '-frerun-cse-after-loop', '-frerun-loop-opt', '-fcse-follow-jumps',
+      '-fno-regmove', '-fno-for-scope'
       # clang doesn't support these flags
       args << arg if not tool =~ /^clang/
     when /^-W[alp],/, /^-Wno-/
@@ -170,7 +176,7 @@ class Cmd
       args << "-Wl,-multiply_defined,suppress"
     when '-undefineddynamic_lookup'
       args << "-Wl,-undefined,dynamic_lookup"
-    when /^-isysroot/
+    when /^-isysroot/, /^--sysroot/
       # We set the sysroot
       enum.next
     when '-dylib'
@@ -232,14 +238,12 @@ class Cmd
   end
 
   def archflags
-    args = []
-    args.concat ENV['HOMEBREW_ARCHFLAGS'].split(' ') if cccfg? 'u'
-    args
+    ENV["HOMEBREW_ARCHFLAGS"].split(" ")
   end
 
   def syspath
     if sdkroot
-      %W{#{sdkroot}/usr #{sdkroot}/usr/local}
+      %W{#{sdkroot}/usr /usr/local}
     else
       %W{/usr /usr/local}
     end
@@ -272,12 +276,10 @@ class Cmd
   def ldflags
     args = path_flags("-L", libpath)
     case mode
-    when :ld   then args << '-headerpad_max_install_names'
-    when :ccld then args << '-Wl,-headerpad_max_install_names'
-    when :cxxld
-      args << '-Wl,-headerpad_max_install_names'
-      args << '-stdlib=libc++' if cccfg? 'g'
-      args << '-stdlib=libstdc++' if cccfg? 'h'
+    when :ld
+      args << "-headerpad_max_install_names"
+    when :ccld, :cxxld
+      args << "-Wl,-headerpad_max_install_names"
     end
     args
   end
