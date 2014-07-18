@@ -10,7 +10,7 @@ class ResourceDouble
   end
 end
 
-class AbstractDownloadStrategyTests < Test::Unit::TestCase
+class AbstractDownloadStrategyTests < Homebrew::TestCase
   def setup
     @name = "foo"
     @resource = ResourceDouble.new
@@ -32,37 +32,20 @@ class AbstractDownloadStrategyTests < Test::Unit::TestCase
   def test_expand_safe_system_args_does_not_mutate_argument
     result = @strategy.expand_safe_system_args(@args)
     assert_equal %w{foo bar baz}, @args
-    assert_not_same @args, result
+    refute_same @args, result
   end
 end
 
-class VCSDownloadStrategyTests < Test::Unit::TestCase
-  def setup
-    @resource = ResourceDouble.new("http://example.com/bar")
-    @strategy = VCSDownloadStrategy
-  end
-
-  def escaped(tag)
-    "#{ERB::Util.url_encode(@resource.url)}--#{tag}"
-  end
-
-  def test_explicit_name
-    downloader = @strategy.new("baz", @resource)
-    assert_equal "baz--foo", downloader.cache_filename("foo")
-  end
-
-  def test_empty_name
-    downloader = @strategy.new("", @resource)
-    assert_equal escaped("foo"), downloader.cache_filename("foo")
-  end
-
-  def test_unknown_name
-    downloader = @strategy.new("__UNKNOWN__", @resource)
-    assert_equal escaped("foo"), downloader.cache_filename("foo")
+class VCSDownloadStrategyTests < Homebrew::TestCase
+  def test_cache_filename
+    resource = ResourceDouble.new("http://example.com/bar")
+    strategy = Class.new(VCSDownloadStrategy) { def cache_tag; "foo"; end }
+    downloader = strategy.new("baz", resource)
+    assert_equal "baz--foo", downloader.cache_filename
   end
 end
 
-class DownloadStrategyDetectorTests < Test::Unit::TestCase
+class DownloadStrategyDetectorTests < Homebrew::TestCase
   def setup
     @d = DownloadStrategyDetector.new
   end
