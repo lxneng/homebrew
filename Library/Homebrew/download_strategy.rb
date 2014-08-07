@@ -515,7 +515,7 @@ class GitDownloadStrategy < VCSDownloadStrategy
   end
 
   def has_ref?
-    quiet_system 'git', '--git-dir', git_dir, 'rev-parse', '-q', '--verify', @ref
+    quiet_system 'git', '--git-dir', git_dir, 'rev-parse', '-q', '--verify', "#{@ref}^{commit}"
   end
 
   def repo_valid?
@@ -591,11 +591,12 @@ class GitDownloadStrategy < VCSDownloadStrategy
   end
 
   def update_submodules
-    safe_system 'git', 'submodule', 'update', '--init'
+    safe_system 'git', 'submodule', 'update', '--init', '--recursive'
   end
 
   def checkout_submodules(dst)
-    sub_cmd = "git checkout-index -a -f --prefix=#{dst}/$path/"
+    escaped_clone_path = @clone.to_s.gsub(/\//, '\/')
+    sub_cmd = "git checkout-index -a -f --prefix=#{dst}/${toplevel/#{escaped_clone_path}/}/$path/"
     safe_system 'git', 'submodule', '--quiet', 'foreach', '--recursive', sub_cmd
   end
 end
